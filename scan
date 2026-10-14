@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan QR</title>
+<style>
+  body{font-family:sans-serif;margin:0;padding:16px;background:#0b1b45;color:#fff;text-align:center}
+  video{width:100%;max-width:480px;border-radius:12px;background:#000}
+  #msg{margin-top:12px;min-height:1.5em}
+</style>
+</head>
+<body>
+<h3>สแกน QR เช็คอิน</h3>
+<video id="v" playsinline muted></video>
+<canvas id="c" style="display:none"></canvas>
+<div id="msg">กำลังเปิดกล้อง...</div>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+  // ใส่ origin ของหน้า Apps Script ที่อนุญาตให้รับรหัส
+  var ALLOWED_ORIGINS = ['https://script.google.com', 'https://script.googleusercontent.com'];
+  var last = '', lastTime = 0;
+  var v = document.getElementById('v'), c = document.getElementById('c'), msg = document.getElementById('msg');
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function(s){
+    v.srcObject = s; return v.play();
+  }).then(function(){ msg.textContent = 'ยกรหัส QR ให้กล้องเห็น'; tick(); })
+  .catch(function(e){ msg.textContent = 'เปิดกล้องไม่สำเร็จ: ' + e.message; });
+
+  function tick(){
+    if (v.readyState === v.HAVE_ENOUGH_DATA) {
+      c.width = v.videoWidth; c.height = v.videoHeight;
+      var x = c.getContext('2d'); x.drawImage(v, 0, 0, c.width, c.height);
+      var img = x.getImageData(0, 0, c.width, c.height);
+      var r = window.jsQR(img.data, img.width, img.height);
+      if (r && r.data) {
+        var code = String(r.data).trim(), now = Date.now();
+        if (code !== last || now - lastTime > 3000) {
+          last = code; lastTime = now;
+          if (window.opener) {
+            window.opener.postMessage({ type: 'qr-scan', code: code }, '*');
+            msg.textContent = 'ส่งรหัสแล้ว: ' + code;
+          } else {
+            msg.textContent = 'ไม่พบหน้าหลัก (เปิดจากปุ่มในระบบเท่านั้น)';
+          }
+        }
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+</script>
+</body>
+</html>
