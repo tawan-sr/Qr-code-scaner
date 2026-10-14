@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
   // ใส่ origin ของหน้า Apps Script ที่อนุญาตให้รับรหัส
-  var ALLOWED_ORIGINS = ['https://script.google.com', 'https://script.googleusercontent.com'];
+  var ALLOWED_ORIGINS = ['https://script.google.com/macros/s/AKfycbyeXC-524kZ8q2IJulOOZHC2KuHsTpQmRfEF1tFTgHrT_FjElLUBXU5XGLVF9tBD-k/exec'];
   var last = '', lastTime = 0;
   var v = document.getElementById('v'), c = document.getElementById('c'), msg = document.getElementById('msg');
 
